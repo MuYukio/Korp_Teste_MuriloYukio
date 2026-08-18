@@ -1,0 +1,17 @@
+namespace Estoque.Domain.Exceptions;
+
+public class SaldoInsuficienteException : Exception
+{
+    public SaldoInsuficienteException(string codigoProduto, int saldoAtual, int quantidadeSolicitada)
+        : base($"Saldo insuficiente para o produto '{codigoProduto}'. " +
+               $"Saldo atual: {saldoAtual}, quantidade solicitada: {quantidadeSolicitada}.")
+    {
+        CodigoProduto = codigoProduto;
+        SaldoAtual = saldoAtual;
+        QuantidadeSolicitada = quantidadeSolicitada;
+    }
+
+    public string CodigoProduto { get; }
+    public int SaldoAtual { get; }
+    public int QuantidadeSolicitada { get; }
+}
