@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Faturamento.Api/Faturamento.Api.csproj" />
+    <Project Path="src/Faturamento.Application/Faturamento.Application.csproj" />
+    <Project Path="src/Faturamento.Domain/Faturamento.Domain.csproj" />
+    <Project Path="src/Faturamento.Infrastructure/Faturamento.Infrastructure.csproj" />
+  </Folder>
+</Solution>
