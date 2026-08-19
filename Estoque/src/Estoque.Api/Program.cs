@@ -1,3 +1,4 @@
+using Estoque.Api.Middlewares;
 using Estoque.Application.UseCases.BaixarSaldo;
 using Estoque.Application.UseCases.CadastrarProduto;
 using Estoque.Domain.Interfaces;
@@ -6,6 +7,8 @@ using Estoque.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Controllers
 builder.Services.AddControllers();
@@ -36,6 +39,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
