@@ -1,0 +1,22 @@
+<mat-toolbar class="shell-toolbar">
+  <span>Korp — Emissao de Notas Fiscais</span>
+</mat-toolbar>
+
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav mode="side" opened class="shell-sidenav">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/produtos" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Produtos</span>
+      </a>
+      <a mat-list-item routerLink="/notas-fiscais" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>receipt_long</mat-icon>
+        <span matListItemTitle>Notas Fiscais</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell-content">
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>
