@@ -36,8 +36,7 @@ public class NotaFiscal
         var item = new ItemNotaFiscal(produtoId, produtoCodigo, produtoDescricao, quantidade);
         _itens.Add(item);
     }
-
-    public void Fechar()
+    public void ValidarPodeSerFechada()
     {
         if (Status != StatusNotaFiscal.Aberta)
             throw new NotaFiscalInvalidaException(
@@ -45,6 +44,11 @@ public class NotaFiscal
 
         if (_itens.Count == 0)
             throw new NotaFiscalInvalidaException("Não é possível imprimir uma nota sem itens.");
+    }
+
+    public void Fechar()
+    {
+        ValidarPodeSerFechada();
 
         Status = StatusNotaFiscal.Fechada;
         FechadaEm = DateTime.UtcNow;
