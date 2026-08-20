@@ -1,41 +1,69 @@
+using Faturamento.Api.Middlewares;
+using Faturamento.Api.Resilience;
+using Faturamento.Application.Interfaces;
+using Faturamento.Application.UseCases.AdicionarItem;
+using Faturamento.Application.UseCases.CriarNotaFiscal;
+using Faturamento.Application.UseCases.ImprimirNotaFiscal;
+using Faturamento.Domain.Interfaces;
+using Faturamento.Infrastructure.ExternalServices;
+using Faturamento.Infrastructure.Persistence;
+using Faturamento.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Polly;
+using Polly.Extensions.Http;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Controllers
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Banco de dados (PostgreSQL via EF Core)
+var connectionString = builder.Configuration.GetConnectionString("FaturamentoConnection");
+builder.Services.AddDbContext<FaturamentoDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Repositórios (Dependency Inversion — Domain define o contrato, Infrastructure implementa)
+builder.Services.AddScoped<INotaFiscalRepository, NotaFiscalRepository>();
+
+// Casos de uso (Application)
+builder.Services.AddScoped<CriarNotaFiscalUseCase>();
+builder.Services.AddScoped<AdicionarItemUseCase>();
+builder.Services.AddScoped<ImprimirNotaFiscalUseCase>();
+
+// CORS - necessário para o Angular (rodando em outra porta) acessar essa API
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddHttpClient<IEstoqueApiClient, EstoqueApiClient>(client =>
+{
+    var estoqueApiBaseUrl = builder.Configuration["EstoqueApi:BaseUrl"];
+    client.BaseAddress = new Uri(estoqueApiBaseUrl!);
+    client.Timeout = TimeSpan.FromSeconds(10); // timeout total do HttpClient, "rede de segurança"
+})
+.AddPolicyHandler(PollyPolicies.ObterPoliticaRetry())
+.AddPolicyHandler(PollyPolicies.ObterPoliticaCircuitBreaker());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+app.UseCors("PermitirAngular");
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+app.UseAuthorization();
+app.MapControllers();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
