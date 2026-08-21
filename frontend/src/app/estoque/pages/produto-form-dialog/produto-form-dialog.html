@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>Novo Produto</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="produto-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Código</mat-label>
+      <input matInput formControlName="codigo" maxlength="50" />
+      @if (form.controls.codigo.hasError('required') && form.controls.codigo.touched) {
+      <mat-error>Código é obrigatório.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="descricao" maxlength="200" />
+      @if (form.controls.descricao.hasError('required') && form.controls.descricao.touched) {
+      <mat-error>Descrição é obrigatória.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Saldo Inicial</mat-label>
+      <input matInput type="number" formControlName="saldoInicial" min="0" />
+      @if (form.controls.saldoInicial.hasError('required') && form.controls.saldoInicial.touched) {
+      <mat-error>Saldo inicial é obrigatório.</mat-error>
+      }
+      @if (form.controls.saldoInicial.hasError('min')) {
+      <mat-error>Saldo não pode ser negativo.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (erro()) {
+    <p class="produto-form__erro">{{ erro() }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()" [disabled]="salvando()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="salvar()" [disabled]="salvando()">
+    {{ salvando() ? 'Salvando...' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

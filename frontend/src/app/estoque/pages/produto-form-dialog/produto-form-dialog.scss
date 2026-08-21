@@ -1,0 +1,12 @@
+.produto-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 360px;
+  padding-top: 8px;
+
+  &__erro {
+    color: var(--mat-sys-error);
+    margin: 0;
+  }
+}
