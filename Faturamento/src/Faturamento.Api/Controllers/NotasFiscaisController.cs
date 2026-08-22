@@ -1,6 +1,7 @@
 ﻿using Faturamento.Application.UseCases.AdicionarItem;
 using Faturamento.Application.UseCases.CriarNotaFiscal;
 using Faturamento.Application.UseCases.ImprimirNotaFiscal;
+using Faturamento.Application.UseCases.RemoverItem;
 using Faturamento.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,16 +15,20 @@ public class NotasFiscaisController : ControllerBase
     private readonly CriarNotaFiscalUseCase _criarNotaFiscalUseCase;
     private readonly AdicionarItemUseCase _adicionarItemUseCase;
     private readonly ImprimirNotaFiscalUseCase _imprimirNotaFiscalUseCase;
+    private readonly RemoverItemUseCase _removerItemUseCase;
+
     public NotasFiscaisController(
         INotaFiscalRepository notaFiscalRepository,
         CriarNotaFiscalUseCase criarNotaFiscalUseCase,
         AdicionarItemUseCase adicionarItemUseCase,
-        ImprimirNotaFiscalUseCase imprimirNotaFiscalUseCase)
+        ImprimirNotaFiscalUseCase imprimirNotaFiscalUseCase,
+        RemoverItemUseCase removerItemUseCase)
     {
         _notaFiscalRepository = notaFiscalRepository;
         _criarNotaFiscalUseCase = criarNotaFiscalUseCase;
         _adicionarItemUseCase = adicionarItemUseCase;
         _imprimirNotaFiscalUseCase = imprimirNotaFiscalUseCase;
+        _removerItemUseCase = removerItemUseCase;
     }
 
     // POST /api/notas-fiscais
@@ -97,23 +102,28 @@ public class NotasFiscaisController : ControllerBase
         var resultado = await _adicionarItemUseCase.ExecutarAsync(input);
         return Ok(resultado);
     }
+
+    // POST /api/notas-fiscais/{id}/imprimir
     [HttpPost("{id:guid}/imprimir")]
     public async Task<IActionResult> Imprimir(Guid id)
     {
         var output = await _imprimirNotaFiscalUseCase.ExecutarAsync(
             new ImprimirNotaFiscalInput { NotaFiscalId = id });
 
-        if (!output.Sucesso)
-        {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
-            {
-                output.NotaFiscalId,
-                output.Status,
-                output.Mensagem
-            });
-        }
-
         return Ok(output);
+    }
+
+    // DELETE /api/notas-fiscais/{id}/itens/{itemId}
+    [HttpDelete("{id:guid}/itens/{itemId:guid}")]
+    public async Task<IActionResult> RemoverItem(Guid id, Guid itemId)
+    {
+        await _removerItemUseCase.ExecutarAsync(new RemoverItemInput
+        {
+            NotaFiscalId = id,
+            ItemId = itemId
+        });
+
+        return NoContent();
     }
 }
 

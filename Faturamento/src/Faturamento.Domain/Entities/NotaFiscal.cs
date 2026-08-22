@@ -33,9 +33,30 @@ public class NotaFiscal
             throw new NotaFiscalInvalidaException(
                 $"Não é possível adicionar itens a uma nota com status '{Status}'. A nota precisa estar Aberta.");
 
+        // Se o produto já está na nota, soma na quantidade da linha existente
+        // em vez de criar uma segunda linha para o mesmo produto.
+        var itemExistente = _itens.FirstOrDefault(i => i.ProdutoCodigo == produtoCodigo);
+        if (itemExistente is not null)
+        {
+            itemExistente.IncrementarQuantidade(quantidade);
+            return;
+        }
+
         var item = new ItemNotaFiscal(produtoId, produtoCodigo, produtoDescricao, quantidade);
         _itens.Add(item);
     }
+    public void RemoverItem(Guid itemId)
+    {
+        if (Status != StatusNotaFiscal.Aberta)
+            throw new NotaFiscalInvalidaException(
+                $"Não é possível remover itens de uma nota com status '{Status}'. A nota precisa estar Aberta.");
+
+        var item = _itens.FirstOrDefault(i => i.Id == itemId)
+            ?? throw new NotaFiscalInvalidaException($"Item '{itemId}' não encontrado nesta nota fiscal.");
+
+        _itens.Remove(item);
+    }
+
     public void ValidarPodeSerFechada()
     {
         if (Status != StatusNotaFiscal.Aberta)

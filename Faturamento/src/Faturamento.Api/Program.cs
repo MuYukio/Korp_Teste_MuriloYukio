@@ -4,6 +4,7 @@ using Faturamento.Application.Interfaces;
 using Faturamento.Application.UseCases.AdicionarItem;
 using Faturamento.Application.UseCases.CriarNotaFiscal;
 using Faturamento.Application.UseCases.ImprimirNotaFiscal;
+using Faturamento.Application.UseCases.RemoverItem;
 using Faturamento.Domain.Interfaces;
 using Faturamento.Infrastructure.ExternalServices;
 using Faturamento.Infrastructure.Persistence;
@@ -12,12 +13,14 @@ using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<RemoverItemUseCase>();
 
 // Banco de dados (PostgreSQL via EF Core)
 var connectionString = builder.Configuration.GetConnectionString("FaturamentoConnection");
