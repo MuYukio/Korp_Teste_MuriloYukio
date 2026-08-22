@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
@@ -58,6 +57,7 @@ builder.Services.AddHttpClient<IEstoqueApiClient, EstoqueApiClient>(client =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<IdempotencyMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

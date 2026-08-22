@@ -105,12 +105,17 @@ public class NotasFiscaisController : ControllerBase
 
     // POST /api/notas-fiscais/{id}/imprimir
     [HttpPost("{id:guid}/imprimir")]
-    public async Task<IActionResult> Imprimir(Guid id)
+    public async Task<ActionResult> Imprimir(
+     Guid id,
+     [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
     {
-        var output = await _imprimirNotaFiscalUseCase.ExecutarAsync(
-            new ImprimirNotaFiscalInput { NotaFiscalId = id });
+        var input = new ImprimirNotaFiscalInput { NotaFiscalId = id };
+        var resultado = await _imprimirNotaFiscalUseCase.ExecutarAsync(input);
 
-        return Ok(output);
+        if (!resultado.Sucesso)
+            return StatusCode(503, resultado);
+
+        return Ok(resultado);
     }
 
     // DELETE /api/notas-fiscais/{id}/itens/{itemId}

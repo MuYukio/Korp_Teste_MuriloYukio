@@ -5,6 +5,7 @@ namespace Faturamento.Infrastructure.Persistence;
 
 public class FaturamentoDbContext : DbContext
 {
+    public DbSet<ChaveIdempotencia> ChavesIdempotencia => Set<ChaveIdempotencia>();
     public FaturamentoDbContext(DbContextOptions<FaturamentoDbContext> options) : base(options)
     {
     }
@@ -42,6 +43,12 @@ public class FaturamentoDbContext : DbContext
             entity.Property(i => i.ProdutoCodigo).IsRequired();
             entity.Property(i => i.ProdutoDescricao).IsRequired();
             entity.Property(i => i.Quantidade).IsRequired();
+        });
+
+        modelBuilder.Entity<ChaveIdempotencia>(entity =>
+        {
+            entity.HasKey(c => c.Chave);
+            entity.Property(c => c.Chave).HasMaxLength(200);
         });
 
         base.OnModelCreating(modelBuilder);
