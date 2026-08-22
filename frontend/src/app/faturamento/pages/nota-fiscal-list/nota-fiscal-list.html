@@ -1,1 +1,59 @@
-<p>nota-fiscal-list works!</p>
+<div class="nota-fiscal-list">
+  <div class="nota-fiscal-list__header">
+    <h1>Notas Fiscais</h1>
+    <button mat-flat-button color="primary" (click)="criarNovaNota()">
+      <mat-icon>add</mat-icon>
+      Nova Nota Fiscal
+    </button>
+  </div>
+
+  @if (carregando()) {
+  <div class="nota-fiscal-list__estado">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Carregando notas fiscais...</span>
+  </div>
+  } @else if (erro()) {
+  <div class="nota-fiscal-list__estado nota-fiscal-list__estado--erro">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ erro() }}</span>
+    <button mat-stroked-button (click)="carregarNotas()">Tentar novamente</button>
+  </div>
+  } @else if (notas().length === 0) {
+  <div class="nota-fiscal-list__estado">
+    <mat-icon>receipt_long</mat-icon>
+    <span>Nenhuma nota fiscal cadastrada ainda.</span>
+  </div>
+  } @else {
+  <table mat-table [dataSource]="dataSource" matSort class="nota-fiscal-list__tabela">
+    <ng-container matColumnDef="numero">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Número</th>
+      <td mat-cell *matCellDef="let nota">{{ nota.numero }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+      <td mat-cell *matCellDef="let nota">
+        <mat-chip [class.chip-aberta]="nota.status === 'Aberta'" [class.chip-fechada]="nota.status === 'Fechada'">
+          {{ nota.status }}
+        </mat-chip>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="criadaEm">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Criada em</th>
+      <td mat-cell *matCellDef="let nota">{{ nota.criadaEm | date: 'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="totalItens">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Itens</th>
+      <td mat-cell *matCellDef="let nota">{{ nota.totalItens }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="colunasExibidas"></tr>
+    <tr mat-row
+        *matRowDef="let row; columns: colunasExibidas"
+        (click)="abrirNota(row)"
+        class="nota-fiscal-list__linha-clicavel"></tr>
+  </table>
+  }
+</div>

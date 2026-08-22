@@ -8,4 +8,11 @@ export const FATURAMENTO_ROUTES: Routes = [
         (m) => m.NotaFiscalList
       ),
   },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/nota-fiscal-detail/nota-fiscal-detail').then(
+        (m) => m.NotaFiscalDetail
+      ),
+  },
 ];

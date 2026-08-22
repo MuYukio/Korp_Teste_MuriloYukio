@@ -1,0 +1,45 @@
+.nota-fiscal-list {
+  padding: 24px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  &__estado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px;
+    color: var(--mat-sys-on-surface-variant);
+
+    &--erro {
+      color: var(--mat-sys-error);
+    }
+  }
+
+  &__tabela {
+    width: 100%;
+  }
+
+  &__linha-clicavel {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--mat-sys-surface-variant);
+    }
+  }
+}
+
+.chip-aberta {
+  background-color: #e3f2fd !important;
+  color: #1565c0 !important;
+}
+
+.chip-fechada {
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
