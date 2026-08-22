@@ -21,10 +21,6 @@ public class ImprimirNotaFiscalUseCase
         var notaFiscal = await _notaFiscalRepository.ObterPorIdAsync(input.NotaFiscalId)
             ?? throw new InvalidOperationException($"Nota fiscal '{input.NotaFiscalId}' não encontrada.");
 
-        // Fecher() já valida status == Aberta e itens.Count > 0 — lança
-        // NotaFiscalInvalidaException se algo estiver errado, capturada pelo middleware.
-        // Chamamos ANTES de tentar baixar o saldo, pra falhar rápido sem nem
-        // acionar o Estoque se a nota já não puder ser impressa.
         notaFiscal.ValidarPodeSerFechada();
 
         var request = new BaixarSaldoEstoqueRequest
@@ -34,20 +30,7 @@ public class ImprimirNotaFiscalUseCase
                 .ToList()
         };
 
-        var resultadoBaixa = await _estoqueApiClient.BaixarSaldoAsync(request);
-
-        if (!resultadoBaixa.Sucesso)
-        {
-            // Fallback: a nota permanece Aberta, nunca fica em estado inconsistente.
-            // Retornamos Sucesso = false para o Controller decidir o status HTTP (503).
-            return new ImprimirNotaFiscalOutput
-            {
-                Sucesso = false,
-                NotaFiscalId = notaFiscal.Id,
-                Status = notaFiscal.Status.ToString(),
-                Mensagem = "Não foi possível processar. Tente novamente em instantes."
-            };
-        }
+        await _estoqueApiClient.BaixarSaldoAsync(request);
 
         notaFiscal.Fechar();
         await _notaFiscalRepository.AtualizarAsync(notaFiscal);

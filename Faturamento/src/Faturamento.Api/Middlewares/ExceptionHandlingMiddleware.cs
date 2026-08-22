@@ -36,6 +36,14 @@ public class ExceptionHandlingMiddleware
                 HttpStatusCode.BadRequest,
                 notaEx.Message),
 
+            OperacaoRecusadaPeloEstoqueException recusadaEx => (
+                HttpStatusCode.BadRequest,
+                recusadaEx.Message),
+
+            EstoqueIndisponivelException indisponivelEx => (
+                HttpStatusCode.ServiceUnavailable,
+                indisponivelEx.Message),
+
             InvalidOperationException invalidOpEx => (
                 HttpStatusCode.Conflict,
                 invalidOpEx.Message),

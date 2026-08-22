@@ -19,5 +19,5 @@ public class BaixarSaldoEstoqueResponse
 
 public interface IEstoqueApiClient
 {
-    Task<BaixarSaldoEstoqueResponse> BaixarSaldoAsync(BaixarSaldoEstoqueRequest request);
+    Task BaixarSaldoAsync(BaixarSaldoEstoqueRequest request);
 }

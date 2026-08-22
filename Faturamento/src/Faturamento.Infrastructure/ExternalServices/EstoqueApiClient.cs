@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using Faturamento.Application.Interfaces;
+using Faturamento.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Faturamento.Infrastructure.ExternalServices;
@@ -15,35 +17,42 @@ public class EstoqueApiClient : IEstoqueApiClient
         _logger = logger;
     }
 
-    public async Task<BaixarSaldoEstoqueResponse> BaixarSaldoAsync(BaixarSaldoEstoqueRequest request)
+    public async Task BaixarSaldoAsync(BaixarSaldoEstoqueRequest request)
     {
+        HttpResponseMessage response;
         try
         {
-            var response = await _httpClient.PatchAsJsonAsync("/api/produtos/baixar-saldo", request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var resultado = await response.Content.ReadFromJsonAsync<BaixarSaldoEstoqueResponse>();
-                return resultado ?? new BaixarSaldoEstoqueResponse { Sucesso = false, Erros = { "Resposta vazia do Estoque.Api." } };
-            }
-
-            _logger.LogWarning("Estoque.Api retornou {StatusCode} ao tentar baixar saldo.", response.StatusCode);
-            return new BaixarSaldoEstoqueResponse
-            {
-                Sucesso = false,
-                Erros = { $"Estoque.Api retornou status {(int)response.StatusCode}." }
-            };
+            response = await _httpClient.PatchAsJsonAsync("/api/produtos/baixar-saldo", request);
         }
         catch (Exception ex)
         {
-            // Captura falhas de rede, timeout, circuit breaker aberto, etc.
-            // O Use Case decide o que fazer com Sucesso = false (mantém a nota Aberta).
-            _logger.LogError(ex, "Falha ao comunicar com Estoque.Api ao tentar baixar saldo.");
-            return new BaixarSaldoEstoqueResponse
-            {
-                Sucesso = false,
-                Erros = { "Não foi possível processar. Tente novamente em instantes." }
-            };
+            _logger.LogError(ex, "Falha de comunicação com Estoque.Api.");
+            throw new EstoqueIndisponivelException(
+                "Não foi possível processar. Tente novamente em instantes.", ex);
         }
+
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            var corpoErro = await response.Content.ReadFromJsonAsync<ErroEstoqueApiResponse>();
+            var mensagem = corpoErro?.Erro ?? "Requisição recusada pelo Estoque.Api.";
+
+            _logger.LogWarning("Estoque.Api recusou a operação: {Mensagem}", mensagem);
+            throw new OperacaoRecusadaPeloEstoqueException(mensagem);
+        }
+
+        _logger.LogWarning("Estoque.Api retornou {StatusCode} inesperado.", response.StatusCode);
+        throw new EstoqueIndisponivelException(
+            "Não foi possível processar. Tente novamente em instantes.");
     }
+}
+
+internal class ErroEstoqueApiResponse
+{
+    public string? Erro { get; set; }
+    public int StatusCode { get; set; }
 }
