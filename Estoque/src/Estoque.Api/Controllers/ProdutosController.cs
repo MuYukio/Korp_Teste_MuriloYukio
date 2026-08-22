@@ -1,6 +1,7 @@
 using Estoque.Application.DTOs;
 using Estoque.Application.UseCases.BaixarSaldo;
 using Estoque.Application.UseCases.CadastrarProduto;
+using Estoque.Application.UseCases.SugerirDescricaoProduto;
 using Estoque.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,15 +14,18 @@ public class ProdutosController : ControllerBase
     private readonly IProdutoRepository _produtoRepository;
     private readonly CadastrarProdutoUseCase _cadastrarProdutoUseCase;
     private readonly BaixarSaldoUseCase _baixarSaldoUseCase;
+    private readonly SugerirDescricaoProdutoUseCase _sugerirDescricaoProdutoUseCase;
 
     public ProdutosController(
         IProdutoRepository produtoRepository,
         CadastrarProdutoUseCase cadastrarProdutoUseCase,
-        BaixarSaldoUseCase baixarSaldoUseCase)
+        BaixarSaldoUseCase baixarSaldoUseCase,
+        SugerirDescricaoProdutoUseCase sugerirDescricaoProdutoUseCase)
     {
         _produtoRepository = produtoRepository;
         _cadastrarProdutoUseCase = cadastrarProdutoUseCase;
         _baixarSaldoUseCase = baixarSaldoUseCase;
+        _sugerirDescricaoProdutoUseCase = sugerirDescricaoProdutoUseCase;
     }
 
     // POST /api/produtos
@@ -48,7 +52,6 @@ public class ProdutosController : ControllerBase
         var produto = await _produtoRepository.ObterPorIdAsync(id);
         if (produto is null)
             return NotFound(new { mensagem = $"Produto com id '{id}' não encontrado." });
-
         return Ok(ProdutoResponse.DeEntidade(produto));
     }
 
@@ -57,10 +60,23 @@ public class ProdutosController : ControllerBase
     public async Task<ActionResult<BaixarSaldoOutput>> BaixarSaldo([FromBody] BaixarSaldoInput input)
     {
         var resultado = await _baixarSaldoUseCase.ExecutarAsync(input);
-
         if (!resultado.Sucesso)
             return BadRequest(resultado);
-
         return Ok(resultado);
     }
+
+    // POST /api/produtos/sugerir-descricao
+    [HttpPost("sugerir-descricao")]
+    public async Task<ActionResult<SugerirDescricaoProdutoOutput>> SugerirDescricao([FromBody] SugerirDescricaoProdutoDto dto)
+    {
+        var input = new SugerirDescricaoProdutoInput { CodigoProduto = dto.Codigo };
+        var resultado = await _sugerirDescricaoProdutoUseCase.ExecutarAsync(input);
+        return Ok(resultado);
+    }
+}
+
+// DTO auxiliar
+public class SugerirDescricaoProdutoDto
+{
+    public string Codigo { get; set; } = string.Empty;
 }
