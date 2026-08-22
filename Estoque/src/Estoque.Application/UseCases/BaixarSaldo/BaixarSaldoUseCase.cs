@@ -25,6 +25,7 @@ public class BaixarSaldoUseCase
                 output.Erros.Add($"Produto '{item.Codigo}' não encontrado.");
                 continue;
             }
+
             produto.BaixarSaldo(item.Quantidade);
 
             await _produtoRepository.AtualizarAsync(produto);

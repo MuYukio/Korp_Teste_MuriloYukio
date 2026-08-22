@@ -12,12 +12,18 @@ public class ProdutoConfiguration : IEntityTypeConfiguration<Produto>
 
         builder.HasKey(p => p.Id);
 
+        builder.Property<uint>("Version")
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsRowVersion();
+
         builder.Property(p => p.Codigo)
             .IsRequired()
             .HasMaxLength(50);
 
         builder.HasIndex(p => p.Codigo)
-            .IsUnique(); // Garante código único a nível de banco também
+            .IsUnique();
 
         builder.Property(p => p.Descricao)
             .IsRequired()

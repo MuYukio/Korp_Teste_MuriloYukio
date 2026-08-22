@@ -1,4 +1,5 @@
 using Estoque.Domain.Entities;
+using Estoque.Domain.Exceptions;
 using Estoque.Domain.Interfaces;
 using Estoque.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,14 @@ public class ProdutoRepository : IProdutoRepository
     public async Task AtualizarAsync(Produto produto)
     {
         _context.Produtos.Update(produto);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcorrenciaException(produto.Codigo);
+        }
     }
 }

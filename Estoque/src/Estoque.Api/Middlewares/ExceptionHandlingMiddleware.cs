@@ -35,15 +35,15 @@ public class ExceptionHandlingMiddleware
             SaldoInsuficienteException saldoEx => (
                 HttpStatusCode.BadRequest,
                 saldoEx.Message),
-
+            ConcorrenciaException concorrenciaEx => (
+                HttpStatusCode.Conflict,
+                concorrenciaEx.Message),
             InvalidOperationException invalidOpEx => (
                 HttpStatusCode.Conflict,
                 invalidOpEx.Message),
-
             ArgumentException argEx => (
                 HttpStatusCode.BadRequest,
                 argEx.Message),
-
             _ => (
                 HttpStatusCode.InternalServerError,
                 "Ocorreu um erro inesperado. Tente novamente mais tarde.")
